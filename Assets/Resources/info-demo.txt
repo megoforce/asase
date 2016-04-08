@@ -1,0 +1,2 @@
+﻿your_jira_server
+your_username:your_password
