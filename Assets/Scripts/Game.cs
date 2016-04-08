@@ -10,9 +10,12 @@ public class Game : MonoBehaviour {
 	List<Issue> issues;
 
 	[SerializeField] Text debugText;
-
+	public static GameObject fishPrefab;
 	void Awake(){
 		issues = new List<Issue>();
+		if(fishPrefab == null){
+			fishPrefab = Resources.Load("Fish") as GameObject;
+		}
 	}
 	void Start(){
 		StartCoroutine(GetJiraData());
@@ -43,18 +46,30 @@ public class Game : MonoBehaviour {
 			for(int i = 0; i < k["issues"].Count; i++)
 				issues.Add(new Issue(k["issues"][i]));
 
+			double maxUnsolved = -1;
+			double minUnsolved = 999999;
 			int doneIssues = 0;
 			int undoneIssues = 0;
 			for(int i = 0; i < issues.Count; i++){
-				if(issues[i].solved)
+				
+				if(issues[i].solved){
 					doneIssues++;
-				else
+				}
+				else{
 					undoneIssues++;
+					if(issues[i].unsolvedMinutes > maxUnsolved)
+						maxUnsolved = issues[i].unsolvedMinutes;
+					if(issues[i].unsolvedMinutes < minUnsolved)
+						minUnsolved = issues[i].unsolvedMinutes;
+				}
 			}
-
 			debugText.text += "\nDone: "+doneIssues;
 			debugText.text += "\nUndone: "+undoneIssues;
 
+			for(int i = 0; i < issues.Count; i++){
+				GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
+				newFish.GetComponent<Fish>().Initialize(issues[i],minUnsolved,maxUnsolved);
+			}
 
 		} else {
 			Debug.Log("No credentials");
@@ -66,7 +81,7 @@ public class Game : MonoBehaviour {
 
 	void CopyTextoToClipboard(string text){
 		TextEditor te = new TextEditor();
-		te.content = new GUIContent(text);
+		te.text = text;
 		te.SelectAll();
 		te.Copy();
 	}
