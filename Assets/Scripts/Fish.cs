@@ -9,15 +9,14 @@ public class Fish : MonoBehaviour {
 	float speed = 0.3f;
 	float amplitude = 5f;
 	float seed;
-	public static Material solvedMaterial, unsolvedMaterial;
+	public static Material fishMaterial;
 	void Awake(){
 		myTransform = GetComponent<Transform>();
 		myTrailRenderer = GetComponent<TrailRenderer>();
 
-		if(Fish.solvedMaterial == null){
-			Fish.solvedMaterial = Resources.Load("Materials/Solved") as Material;
-			Fish.unsolvedMaterial = Resources.Load("Materials/Unsolved") as Material;
-		}
+		if(Fish.fishMaterial == null)
+			Fish.fishMaterial = Resources.Load("Materials/Fish") as Material;
+		
 
 		seed = Random.Range(0,1234567f);
 
@@ -30,13 +29,14 @@ public class Fish : MonoBehaviour {
 	}
 	public void Colorize(Color color){
 		myTrailRenderer.material.color = color;
+		myTrailRenderer.material.SetColor ("_EmissionColor", color);
 	}
 
 
 	void Update(){
-		float xPosition = (-amplitude/2f + Mathf.PerlinNoise(seed,Time.time*speed)*amplitude);
+		float xPosition = -amplitude/2f + Mathf.PerlinNoise(seed,Time.time*speed)*amplitude;
 		float yPosition = -amplitude/2f + Mathf.PerlinNoise(Time.time*speed,seed)*amplitude;
-		float zPosition = (-amplitude/2f + Mathf.PerlinNoise(seed+12.234f,Time.time*speed)*amplitude);
+		float zPosition = -amplitude/2f + Mathf.PerlinNoise(seed+12.234f,Time.time*speed)*amplitude;
 		myTransform.localPosition = new Vector3(xPosition,yPosition,zPosition);
 
 	}

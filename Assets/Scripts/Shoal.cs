@@ -14,12 +14,14 @@ public class Shoal : MonoBehaviour{
 	float amplitude = 15f;
 	float seed;
 
+	public Color color;
 
 
-	public void Initialize(string _projectName, GameObject _shoalGameObject){
+	public void Initialize(string _projectName, GameObject _shoalGameObject, Color _color){
 		fishes = new List<Fish>();
 		projectName = _projectName;
 		shoalGameObject = _shoalGameObject;
+		color = _color;
 		shoalTransform = shoalGameObject.GetComponent<Transform>();
 		if(fishPrefab == null){
 			fishPrefab = Resources.Load("Fish") as GameObject;
@@ -36,7 +38,7 @@ public class Shoal : MonoBehaviour{
 			newFishGO.GetComponent<Transform>().SetParent(shoalGameObject.GetComponent<Transform>());
 			Fish newFish = newFishGO.AddComponent<Fish>();
 			newFish.Initialize(issue);
-			newFish.Colorize(ProjectToColor());
+			newFish.Colorize(color);
 			fishes.Add(newFish);
 		}
 
@@ -56,19 +58,12 @@ public class Shoal : MonoBehaviour{
 		return null;
 	}
 
-	//Returns a deterministic random color for a string
-	public Color ProjectToColor(){
-		int a = projectName.GetHashCode();
-		float r = (float)(a % 12345) / 12345f;
-		float g = (float)(a % 9017) / 9017f;
-		float b = (float)(a % 16778) / 16778f;	
-		return new Color(r,g,b);
-	}
+
 	void Update(){
-		float xPosition = (-amplitude/2f + Mathf.PerlinNoise(seed,Time.time*speed)*amplitude)*(Screen.width/Screen.height);
-		float yPosition = (-amplitude/2f + Mathf.PerlinNoise(Time.time*speed,seed)*amplitude)*(Screen.height/Screen.width);
-		float zPosition = (-amplitude/2f + Mathf.PerlinNoise(seed+12.234f,Time.time*speed)*amplitude)*(Screen.height/Screen.width);
-		shoalTransform.position = new Vector3(xPosition,yPosition,zPosition);
+		float x = (-amplitude/2f + Mathf.PerlinNoise(seed,Time.time*speed)*amplitude)*(Screen.width/Screen.height);
+		float y = (-amplitude/2f + Mathf.PerlinNoise(Time.time*speed,seed)*amplitude)*(Screen.height/Screen.width);
+		float z = (-amplitude/2f + Mathf.PerlinNoise(seed+12.234f,Time.time*speed)*amplitude)*(Screen.height/Screen.width);
+		shoalTransform.position = new Vector3(x,y,z);
 
 	}
 }

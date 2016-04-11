@@ -6,21 +6,24 @@ using System.Collections.Generic;
 public class Game : MonoBehaviour {
 	string server = "";
 	string credentials = "";
-	[SerializeField]
-//	List<Fish> fishes;
-	List<Shoal> shoals;
+	[SerializeField] List<Shoal> shoals;
 
 	[SerializeField] Text debugText;
+	[SerializeField] RectTransform projectsUIContainer;
+
+	static GameObject prjectUIPrefab;
 	void Awake(){
 		shoals = new List<Shoal>();
-//		fishes = new List<Fish>();
 		List<string> projects = new List<string>();
-		List<Vector3> shoalCentroids = new List<Vector3>();
 
+		if(prjectUIPrefab == null){
+			prjectUIPrefab = Resources.Load("UIProject") as GameObject;
+		}
 	}
 	void Start(){
 		StartCoroutine(GetJiraData());
 	}
+
 	IEnumerator GetJiraData(){
 		while(true){
 			TextAsset credentialsTextAsset = Resources.Load("info") as TextAsset;
@@ -61,13 +64,12 @@ public class Game : MonoBehaviour {
 	}
 
 	void JiraToFishes(string jiraText){
-		debugText.text = jiraText;
-		Debug.Log(jiraText);
+//		Debug.Log(jiraText);
 		JSONObject k = new JSONObject(jiraText);
 
 		debugText.text = "";
 		debugText.text += "Total issues: "+k["issues"].Count;
-		CopyTextoToClipboard(jiraText);
+//		CopyTextoToClipboard(jiraText);
 
 
 		double maxUnsolved = -1;
@@ -78,9 +80,16 @@ public class Game : MonoBehaviour {
 			if(currentShoal == null){
 				GameObject newShoalGO = new GameObject(projectName);
 				Shoal newShoal = newShoalGO.AddComponent<Shoal>();
-				newShoal.Initialize(projectName,newShoalGO);
+				newShoal.Initialize(projectName,newShoalGO,ProjectToColor(projectName));
 				shoals.Add(newShoal);
 				currentShoal = newShoal;
+
+				GameObject newProjectUI = Instantiate(prjectUIPrefab) as GameObject;
+				RectTransform newProjectUITransform = newProjectUI.GetComponent<RectTransform>();
+				newProjectUITransform.SetParent(projectsUIContainer);
+				newProjectUITransform.sizeDelta = new Vector2(0,40f);
+				newProjectUITransform.anchoredPosition = new Vector2(0,-20f-(shoals.Count-1)*40f);
+				newProjectUI.GetComponent<UIProject>().SetProject(projectName,ProjectToColor(projectName));
 			}
 			currentShoal.AddFish(new Issue(k["issues"][i]));
 		}
@@ -98,7 +107,27 @@ public class Game : MonoBehaviour {
 	}
 
 
+	//Returns a deterministic random color for a string
+	Color ProjectToColor(string projectName){
+		int a = projectName.GetHashCode();
+		float[] col = new float[3];
 
+		//Get 3 random deterministic numbers
+		col[0] = Mathf.Abs((a % 12345) / 12345f);
+		col[1] = Mathf.Abs((a % 9017) / 9017f);
+		col[2] = Mathf.Abs((a % 16778) / 16778f);
+
+		//Normalize
+		float max = float.MinValue;
+		for(int i = 0; i < col.Length; i++)
+			if(col[i] > max)
+				max = col[i];
+
+		for(int i = 0; i < col.Length; i++)
+			col[i] /= max;
+
+		return new Color(col[0],col[1],col[2]);
+	}
 	void CopyTextoToClipboard(string text){
 		TextEditor te = new TextEditor();
 		te.text = text;
