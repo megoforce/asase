@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Shoal : MonoBehaviour{
-	List<Fish> fishes;
+	public List<Fish> fishes;
 	public GameObject shoalGameObject;
 	public Transform shoalTransform;
 
@@ -47,7 +47,6 @@ public class Shoal : MonoBehaviour{
 		Fish currentFish = GetFish(key);
 		Destroy(currentFish.gameObject);
 		fishes.Remove(currentFish);
-
 	}
 
 	Fish GetFish(string key){
