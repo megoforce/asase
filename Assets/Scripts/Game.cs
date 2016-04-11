@@ -10,11 +10,12 @@ public class Game : MonoBehaviour {
 
 	[SerializeField] Text debugText;
 	[SerializeField] RectTransform projectsUIContainer;
+	[SerializeField] HideShowUI hideShowUI;
+
 
 	static GameObject prjectUIPrefab;
 	void Awake(){
 		shoals = new List<Shoal>();
-		List<string> projects = new List<string>();
 
 		if(prjectUIPrefab == null){
 			prjectUIPrefab = Resources.Load("UIProject") as GameObject;
@@ -38,19 +39,17 @@ public class Game : MonoBehaviour {
 				string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
 				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
 
-				JiraToFishes((Resources.Load("test") as TextAsset).text);
-//				WWW www = new WWW(url, null, headers);
-//				Debug.Log("pre www");
-//				yield return www;
-//				Debug.Log("post www");
-//				if(www.error != null){
-//					
-//					JiraToFishes(www.text);
-//
-//
-//				} else {
-//					Debug.Log("Connection error "+www.error);
-//				}
+//				JiraToFishes((Resources.Load("test") as TextAsset).text);
+				WWW www = new WWW(url, null, headers);
+				yield return www;
+				if(www.error == null){
+					
+					JiraToFishes(www.text);
+
+
+				} else {
+					Debug.Log("Connection error "+www.error);
+				}
 			} else {
 				Debug.LogError("No credentials found. Please rename Resources/info-demo to Resources/info and write your server and credentials there.");
 			}
@@ -68,12 +67,10 @@ public class Game : MonoBehaviour {
 		JSONObject k = new JSONObject(jiraText);
 
 		debugText.text = "";
-		debugText.text += "Total issues: "+k["issues"].Count;
+		debugText.text += "Total: "+k["issues"].Count;
 //		CopyTextoToClipboard(jiraText);
 
 
-		double maxUnsolved = -1;
-		double minUnsolved = 999999;
 		for(int i = 0; i < k["issues"].Count; i++){
 			string projectName = k["issues"][i]["fields"]["project"]["name"].str;
 			Shoal currentShoal = GetShoalFromProjectName(projectName);
@@ -124,7 +121,8 @@ public class Game : MonoBehaviour {
 				max = col[i];
 
 		for(int i = 0; i < col.Length; i++)
-			col[i] /= max;
+			col[i] /= (max+0.7f);
+		
 
 		return new Color(col[0],col[1],col[2]);
 	}
@@ -133,5 +131,13 @@ public class Game : MonoBehaviour {
 		te.text = text;
 		te.SelectAll();
 		te.Copy();
+	}
+	void Update(){
+		if(Input.GetKeyDown(KeyCode.Tab)){
+			if(hideShowUI.shown)
+				hideShowUI.Hide();
+			else
+				hideShowUI.Show();
+		}
 	}
 }
