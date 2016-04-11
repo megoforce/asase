@@ -38,9 +38,8 @@ public class Fish : MonoBehaviour {
 	void Update(){
 		float xPosition = (-amplitude/2f + Mathf.PerlinNoise(seed,Time.time*speed)*amplitude)*(16f/9f);
 		float yPosition = -amplitude/2f + Mathf.PerlinNoise(Time.time*speed,seed)*amplitude;
-
-
-		myTransform.position = new Vector3(xPosition,yPosition,0);
+		float zPosition = (-amplitude/2f + Mathf.PerlinNoise(seed+12.234f,Time.time*speed)*amplitude)*0.5f;
+		myTransform.position = new Vector3(xPosition,yPosition,zPosition);
 
 	}
 }

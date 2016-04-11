@@ -9,6 +9,7 @@ public class Game : MonoBehaviour {
 	[SerializeField]
 	List<Fish> fishes;
 
+
 	[SerializeField] Text debugText;
 	public static GameObject fishPrefab;
 	void Awake(){
@@ -21,52 +22,57 @@ public class Game : MonoBehaviour {
 		StartCoroutine(GetJiraData());
 	}
 	IEnumerator GetJiraData(){
-		TextAsset credentialsTextAsset = Resources.Load("info") as TextAsset;
-		if(credentialsTextAsset != null){
-			server = credentialsTextAsset.text.Split('\n')[0];
-			credentials = credentialsTextAsset.text.Split('\n')[1];
+		while(true){
+			TextAsset credentialsTextAsset = Resources.Load("info") as TextAsset;
+			if(credentialsTextAsset != null){
+				server = credentialsTextAsset.text.Split('\n')[0];
+				credentials = credentialsTextAsset.text.Split('\n')[1];
+				Debug.Log("Query using:");
+				Debug.Log("Server<color=yellow>\t\t"+server+"</color>");
+				Debug.Log("Credentials<color=yellow>\t"+credentials+"</color>");
 
-			Dictionary<string,string> headers = new Dictionary<string,string>();
-			string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
-			headers["Authorization"] = "Basic " + System.Convert.ToBase64String(
-				System.Text.Encoding.ASCII.GetBytes(credentials));
+				Dictionary<string,string> headers = new Dictionary<string,string>();
+				string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
+				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(
+					System.Text.Encoding.ASCII.GetBytes(credentials));
 
-			WWW www = new WWW(url, null, headers);
-			yield return www;
+				WWW www = new WWW(url, null, headers);
+				yield return www;
 
-//			debugText.text = www.text;
-//			Debug.Log(www.text);
-			JSONObject k = new JSONObject(www.text);
+	//			debugText.text = www.text;
+	//			Debug.Log(www.text);
+				JSONObject k = new JSONObject(www.text);
 
-			debugText.text = "";
-			debugText.text += "Total issues: "+k["issues"].Count;
-			CopyTextoToClipboard(www.text);
+				debugText.text = "";
+				debugText.text += "Total issues: "+k["issues"].Count;
+//				CopyTextoToClipboard(www.text);
 
 
-			double maxUnsolved = -1;
-			double minUnsolved = 999999;
-			for(int i = 0; i < k["issues"].Count; i++){
-				if(!FishAlreadyExist(k["issues"][i]["key"].str)){
-					GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
-					newFish.GetComponent<Fish>().Initialize(new Issue(k["issues"][i]));
-					fishes.Add(newFish.GetComponent<Fish>());
-
+				double maxUnsolved = -1;
+				double minUnsolved = 999999;
+				for(int i = 0; i < k["issues"].Count; i++){
+					if(!FishAlreadyExist(k["issues"][i]["key"].str)){
+						GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
+						newFish.GetComponent<Fish>().Initialize(new Issue(k["issues"][i]));
+						fishes.Add(newFish.GetComponent<Fish>());
+					}
 					if(fishes[i].issue.unsolvedMinutes > maxUnsolved)
 						maxUnsolved = fishes[i].issue.unsolvedMinutes;
 					if(fishes[i].issue.unsolvedMinutes < minUnsolved)
 						minUnsolved = fishes[i].issue.unsolvedMinutes;
-					
 				}
+				for(int i = 0; i < fishes.Count; i++){
+					fishes[i].NormalizeSize(minUnsolved,maxUnsolved);
+				}
+
+
+
+
+			} else {
+				Debug.Log("No credentials");
 			}
-			for(int i = 0; i < fishes.Count; i++){
-				fishes[i].NormalizeSize(minUnsolved,maxUnsolved);
-			}
 
-
-
-
-		} else {
-			Debug.Log("No credentials");
+			yield return new WaitForSeconds(10f);
 		}
 
 
