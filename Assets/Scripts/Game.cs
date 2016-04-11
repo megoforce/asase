@@ -64,7 +64,7 @@ public class Game : MonoBehaviour {
 //		Debug.Log(jiraText);
 		JSONObject k = new JSONObject(jiraText);
 
-		debugText.text += "Total: "+k["issues"].Count;
+		debugText.text = "Total: "+k["issues"].Count;
 //		CopyTextoToClipboard(jiraText);
 
 
@@ -120,7 +120,7 @@ public class Game : MonoBehaviour {
 	}
 
 
-	//Returns a deterministic random color for a string
+	//Returns a deterministic orange for a string
 	Color ProjectToColor(string projectName){
 		int a = projectName.GetHashCode();
 		float[] col = new float[3];
@@ -137,10 +137,10 @@ public class Game : MonoBehaviour {
 				max = col[i];
 
 		for(int i = 0; i < col.Length; i++)
-			col[i] /= (max+0.7f);
+			col[i] /= max;
 		
 
-		return new Color(col[0],col[1],col[2]);
+		return new Color(1,0.2f+col[1]*0.25f,0);
 	}
 	void CopyTextoToClipboard(string text){
 		TextEditor te = new TextEditor();
