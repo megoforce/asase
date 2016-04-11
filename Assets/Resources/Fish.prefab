@@ -8,7 +8,6 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 402624}
-  - 114: {fileID: 11460138}
   - 96: {fileID: 9620670}
   m_Layer: 0
   m_Name: Fish
@@ -74,24 +73,8 @@ TrailRenderer:
     m_Color[4]:
       serializedVersion: 2
       rgba: 4294967295
-  m_MinVertexDistance: 0.1
+  m_MinVertexDistance: 0.001
   m_Autodestruct: 0
---- !u!114 &11460138
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 147604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d69b993674644dcf9a0a5f0bc6f79c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  issue:
-    project: 
-    unsolvedMinutes: 0
-    solved: 0
-    key: 
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

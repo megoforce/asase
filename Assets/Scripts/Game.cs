@@ -7,16 +7,16 @@ public class Game : MonoBehaviour {
 	string server = "";
 	string credentials = "";
 	[SerializeField]
-	List<Fish> fishes;
-
+//	List<Fish> fishes;
+	List<Shoal> shoals;
 
 	[SerializeField] Text debugText;
-	public static GameObject fishPrefab;
 	void Awake(){
-		fishes = new List<Fish>();
-		if(fishPrefab == null){
-			fishPrefab = Resources.Load("Fish") as GameObject;
-		}
+		shoals = new List<Shoal>();
+//		fishes = new List<Fish>();
+		List<string> projects = new List<string>();
+		List<Vector3> shoalCentroids = new List<Vector3>();
+
 	}
 	void Start(){
 		StartCoroutine(GetJiraData());
@@ -33,44 +33,25 @@ public class Game : MonoBehaviour {
 
 				Dictionary<string,string> headers = new Dictionary<string,string>();
 				string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
-				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(
-					System.Text.Encoding.ASCII.GetBytes(credentials));
+				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
 
-				WWW www = new WWW(url, null, headers);
-				yield return www;
-
-	//			debugText.text = www.text;
-	//			Debug.Log(www.text);
-				JSONObject k = new JSONObject(www.text);
-
-				debugText.text = "";
-				debugText.text += "Total issues: "+k["issues"].Count;
-//				CopyTextoToClipboard(www.text);
-
-
-				double maxUnsolved = -1;
-				double minUnsolved = 999999;
-				for(int i = 0; i < k["issues"].Count; i++){
-					if(!FishAlreadyExist(k["issues"][i]["key"].str)){
-						GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
-						newFish.GetComponent<Fish>().Initialize(new Issue(k["issues"][i]));
-						fishes.Add(newFish.GetComponent<Fish>());
-					}
-					if(fishes[i].issue.unsolvedMinutes > maxUnsolved)
-						maxUnsolved = fishes[i].issue.unsolvedMinutes;
-					if(fishes[i].issue.unsolvedMinutes < minUnsolved)
-						minUnsolved = fishes[i].issue.unsolvedMinutes;
-				}
-				for(int i = 0; i < fishes.Count; i++){
-					fishes[i].NormalizeSize(minUnsolved,maxUnsolved);
-				}
-
-
-
-
+				JiraToFishes((Resources.Load("test") as TextAsset).text);
+//				WWW www = new WWW(url, null, headers);
+//				Debug.Log("pre www");
+//				yield return www;
+//				Debug.Log("post www");
+//				if(www.error != null){
+//					
+//					JiraToFishes(www.text);
+//
+//
+//				} else {
+//					Debug.Log("Connection error "+www.error);
+//				}
 			} else {
-				Debug.Log("No credentials");
+				Debug.LogError("No credentials found. Please rename Resources/info-demo to Resources/info and write your server and credentials there.");
 			}
+			
 
 			yield return new WaitForSeconds(10f);
 		}
@@ -78,15 +59,45 @@ public class Game : MonoBehaviour {
 
 
 	}
-	bool FishAlreadyExist(string key){
-		for(int i = 0; i < fishes.Count; i++)
-			if(fishes[i].issue.key == key)
-				return true;
 
-		return false;
-			
-		
+	void JiraToFishes(string jiraText){
+		debugText.text = jiraText;
+		Debug.Log(jiraText);
+		JSONObject k = new JSONObject(jiraText);
+
+		debugText.text = "";
+		debugText.text += "Total issues: "+k["issues"].Count;
+		CopyTextoToClipboard(jiraText);
+
+
+		double maxUnsolved = -1;
+		double minUnsolved = 999999;
+		for(int i = 0; i < k["issues"].Count; i++){
+			string projectName = k["issues"][i]["fields"]["project"]["name"].str;
+			Shoal currentShoal = GetShoalFromProjectName(projectName);
+			if(currentShoal == null){
+				GameObject newShoalGO = new GameObject(projectName);
+				Shoal newShoal = newShoalGO.AddComponent<Shoal>();
+				newShoal.Initialize(projectName,newShoalGO);
+				shoals.Add(newShoal);
+				currentShoal = newShoal;
+			}
+			currentShoal.AddFish(new Issue(k["issues"][i]));
+		}
+
+
+
 	}
+
+
+	Shoal GetShoalFromProjectName(string projectName){
+		for(int i = 0; i < shoals.Count; i++)
+			if(shoals[i].projectName == projectName)
+				return shoals[i];
+		return null;
+	}
+
+
 
 	void CopyTextoToClipboard(string text){
 		TextEditor te = new TextEditor();
