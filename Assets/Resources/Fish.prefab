@@ -73,7 +73,7 @@ TrailRenderer:
       rgba: 4294967295
     m_Color[4]:
       serializedVersion: 2
-      rgba: 16777215
+      rgba: 4294967295
   m_MinVertexDistance: 0.1
   m_Autodestruct: 0
 --- !u!114 &11460138
@@ -91,6 +91,7 @@ MonoBehaviour:
     project: 
     unsolvedMinutes: 0
     solved: 0
+    key: 
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

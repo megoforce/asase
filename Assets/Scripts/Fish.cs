@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Fish : MonoBehaviour {
 	[SerializeField]
-	Issue issue;
+	public Issue issue;
 	TrailRenderer myTrailRenderer;
 	Transform myTransform;
 	float speed = 0.3f;
@@ -22,10 +22,11 @@ public class Fish : MonoBehaviour {
 		seed = Random.Range(0,1234567f);
 	}
 
-	public void Initialize(Issue _issue,double minUnsolved, double maxUnsolved){
+	public void Initialize(Issue _issue){
 		issue = _issue;
 		myTrailRenderer.sharedMaterial = (issue.solved) ? solvedMaterial : unsolvedMaterial;
-
+	}
+	public void NormalizeSize(double minUnsolved, double maxUnsolved){
 		if(!issue.solved){
 			double delta = maxUnsolved - minUnsolved;
 			myTrailRenderer.startWidth = (float)(0.1f + ((issue.unsolvedMinutes-minUnsolved) / delta));

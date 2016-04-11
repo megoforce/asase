@@ -7,12 +7,12 @@ public class Game : MonoBehaviour {
 	string server = "";
 	string credentials = "";
 	[SerializeField]
-	List<Issue> issues;
+	List<Fish> fishes;
 
 	[SerializeField] Text debugText;
 	public static GameObject fishPrefab;
 	void Awake(){
-		issues = new List<Issue>();
+		fishes = new List<Fish>();
 		if(fishPrefab == null){
 			fishPrefab = Resources.Load("Fish") as GameObject;
 		}
@@ -27,7 +27,7 @@ public class Game : MonoBehaviour {
 			credentials = credentialsTextAsset.text.Split('\n')[1];
 
 			Dictionary<string,string> headers = new Dictionary<string,string>();
-			string url = server+"/rest/api/2/search?jql=ORDER+BY+createdDate+DESC";
+			string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
 			headers["Authorization"] = "Basic " + System.Convert.ToBase64String(
 				System.Text.Encoding.ASCII.GetBytes(credentials));
 
@@ -40,36 +40,30 @@ public class Game : MonoBehaviour {
 
 			debugText.text = "";
 			debugText.text += "Total issues: "+k["issues"].Count;
-//			CopyTextoToClipboard(www.text);
+			CopyTextoToClipboard(www.text);
 
-
-			for(int i = 0; i < k["issues"].Count; i++)
-				issues.Add(new Issue(k["issues"][i]));
 
 			double maxUnsolved = -1;
 			double minUnsolved = 999999;
-			int doneIssues = 0;
-			int undoneIssues = 0;
-			for(int i = 0; i < issues.Count; i++){
-				
-				if(issues[i].solved){
-					doneIssues++;
-				}
-				else{
-					undoneIssues++;
-					if(issues[i].unsolvedMinutes > maxUnsolved)
-						maxUnsolved = issues[i].unsolvedMinutes;
-					if(issues[i].unsolvedMinutes < minUnsolved)
-						minUnsolved = issues[i].unsolvedMinutes;
-				}
-			}
-			debugText.text += "\nDone: "+doneIssues;
-			debugText.text += "\nUndone: "+undoneIssues;
+			for(int i = 0; i < k["issues"].Count; i++){
+				if(!FishAlreadyExist(k["issues"][i]["key"].str)){
+					GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
+					newFish.GetComponent<Fish>().Initialize(new Issue(k["issues"][i]));
+					fishes.Add(newFish.GetComponent<Fish>());
 
-			for(int i = 0; i < issues.Count; i++){
-				GameObject newFish = Instantiate(fishPrefab,new Vector3(i % 10,i / 10,0),Quaternion.identity) as GameObject;
-				newFish.GetComponent<Fish>().Initialize(issues[i],minUnsolved,maxUnsolved);
+					if(fishes[i].issue.unsolvedMinutes > maxUnsolved)
+						maxUnsolved = fishes[i].issue.unsolvedMinutes;
+					if(fishes[i].issue.unsolvedMinutes < minUnsolved)
+						minUnsolved = fishes[i].issue.unsolvedMinutes;
+					
+				}
 			}
+			for(int i = 0; i < fishes.Count; i++){
+				fishes[i].NormalizeSize(minUnsolved,maxUnsolved);
+			}
+
+
+
 
 		} else {
 			Debug.Log("No credentials");
@@ -77,6 +71,15 @@ public class Game : MonoBehaviour {
 
 
 
+	}
+	bool FishAlreadyExist(string key){
+		for(int i = 0; i < fishes.Count; i++)
+			if(fishes[i].issue.key == key)
+				return true;
+
+		return false;
+			
+		
 	}
 
 	void CopyTextoToClipboard(string text){
