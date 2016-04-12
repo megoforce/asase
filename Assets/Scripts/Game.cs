@@ -182,7 +182,7 @@ public class Game : MonoBehaviour {
 		te.Copy();
 	}
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.Tab)){
+		if(Input.GetKeyDown(KeyCode.JoystickButton0)){
 			if(hideShowUI.shown)
 				hideShowUI.Hide();
 			else
