@@ -7,18 +7,24 @@ public class Game : MonoBehaviour {
 	string server = "";
 	string credentials = "";
 	[SerializeField] List<Shoal> shoals;
+	List<UIProject> projectsUI;
 
-	[SerializeField] Text debugText;
 	[SerializeField] RectTransform projectsUIContainer;
 	[SerializeField] HideShowUI hideShowUI;
 
 
 	static GameObject prjectUIPrefab;
+	static AudioClip newProject, endProject, endFish;
 	void Awake(){
 		shoals = new List<Shoal>();
+		projectsUI = new List<UIProject>();
 
 		if(prjectUIPrefab == null){
 			prjectUIPrefab = Resources.Load("UIProject") as GameObject;
+			newProject = Resources.Load("Audio/new-project") as AudioClip;
+			endProject = Resources.Load("Audio/end-project") as AudioClip;
+			endFish = Resources.Load("Audio/end-fish") as AudioClip;
+
 		}
 	}
 	void Start(){
@@ -26,6 +32,7 @@ public class Game : MonoBehaviour {
 	}
 
 	IEnumerator GetJiraData(){
+		int i = 0;
 		while(true){
 			TextAsset credentialsTextAsset = Resources.Load("info") as TextAsset;
 			if(credentialsTextAsset != null){
@@ -39,7 +46,8 @@ public class Game : MonoBehaviour {
 				string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
 				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
 
-				JiraToFishes((Resources.Load("test") as TextAsset).text);
+				JiraToFishes((Resources.Load("test"+i) as TextAsset).text);
+				i = (i+1) % 4;
 //				WWW www = new WWW(url, null, headers);
 //				yield return www;
 
@@ -53,7 +61,7 @@ public class Game : MonoBehaviour {
 			}
 			
 
-			yield return new WaitForSeconds(10f);
+			yield return new WaitForSeconds(5f);
 		}
 
 
@@ -64,7 +72,7 @@ public class Game : MonoBehaviour {
 //		Debug.Log(jiraText);
 		JSONObject k = new JSONObject(jiraText);
 
-		debugText.text = "Total: "+k["issues"].Count;
+//		debugText.text = "Total: "+k["issues"].Count;
 //		CopyTextoToClipboard(jiraText);
 
 
@@ -85,7 +93,11 @@ public class Game : MonoBehaviour {
 				newProjectUITransform.SetParent(projectsUIContainer);
 				newProjectUITransform.sizeDelta = new Vector2(0,40f);
 				newProjectUITransform.anchoredPosition = new Vector2(0,-20f-(shoals.Count-1)*40f);
-				newProjectUI.GetComponent<UIProject>().SetProject(projectName,ProjectToColor(projectName));
+				newProjectUI.GetComponent<UIProject>().SetProject(projectName);
+				projectsUI.Add(newProjectUI.GetComponent<UIProject>());
+
+				Debug.Log("new project: "+projectName);
+				MonophonicAudio.instance.Play(newProject,1);
 			}
 			currentShoal.AddFish(new Issue(k["issues"][i]));
 		}
@@ -95,14 +107,35 @@ public class Game : MonoBehaviour {
 		for(int i = 0; i < shoals.Count; i++){
 			for(int j = 0; j < shoals[i].fishes.Count; j++){
 				if(!KeyExistInJSON(k,shoals[i].fishes[j].issue.key)){
+					Debug.Log("end fish: "+shoals[i].fishes[j].issue.key);
 					shoals[i].RemoveFish(shoals[i].fishes[j].issue.key);
+					MonophonicAudio.instance.Play(endFish,2);
 				}
+			}
+
+			if(!ProjectExistInJSON(k,shoals[i].projectName)){
+				Debug.Log("end project: "+shoals[i].projectName);
+				Destroy(projectsUI[i].gameObject);
+				projectsUI.RemoveAt(i);
+				Destroy(shoals[i].gameObject);
+				shoals.RemoveAt(i);
+
+				MonophonicAudio.instance.Play(endProject,1);
 			}
 		}
 
 
+
+
 	}
 
+	bool ProjectExistInJSON(JSONObject k, string projectName){
+		for(int i = 0; i < k["issues"].Count; i++)
+			if(k["issues"][i]["fields"]["project"]["name"].str == projectName)
+				return true;
+		
+		return false;
+	}
 	bool KeyExistInJSON(JSONObject k, string key){
 		for(int i = 0; i < k["issues"].Count; i++){
 			if(k["issues"][i]["key"].str == key){

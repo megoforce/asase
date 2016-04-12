@@ -4,10 +4,8 @@ using System.Collections;
 
 
 public class UIProject : MonoBehaviour {
-	[SerializeField] Image myImage;
 	[SerializeField] Text myText;
-	public void SetProject(string text, Color color){
-		myImage.color = color;
+	public void SetProject(string text){
 		myText.text = text;
 	}
 

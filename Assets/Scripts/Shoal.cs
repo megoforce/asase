@@ -15,7 +15,7 @@ public class Shoal : MonoBehaviour{
 	float seed;
 
 	public Color color;
-
+	static AudioClip newFishFX;
 
 	public void Initialize(string _projectName, GameObject _shoalGameObject, Color _color){
 		fishes = new List<Fish>();
@@ -25,6 +25,7 @@ public class Shoal : MonoBehaviour{
 		shoalTransform = shoalGameObject.GetComponent<Transform>();
 		if(fishPrefab == null){
 			fishPrefab = Resources.Load("Fish") as GameObject;
+			newFishFX = Resources.Load("Audio/new-fish") as AudioClip;
 		}
 		seed = Random.Range(0,1234567f);
 
@@ -33,6 +34,7 @@ public class Shoal : MonoBehaviour{
 	public void AddFish(Issue issue){
 		Fish currentFish = GetFish(issue.key);
 		if(currentFish == null){
+			Debug.Log("new fish: "+issue.key);
 			GameObject newFishGO = Instantiate(fishPrefab) as GameObject;
 			newFishGO.name = issue.key;
 			newFishGO.GetComponent<Transform>().SetParent(shoalGameObject.GetComponent<Transform>());
@@ -40,6 +42,9 @@ public class Shoal : MonoBehaviour{
 			newFish.Initialize(issue);
 			newFish.Colorize(color);
 			fishes.Add(newFish);
+
+			MonophonicAudio.instance.Play(newFishFX,2);
+
 		}
 
 	}
