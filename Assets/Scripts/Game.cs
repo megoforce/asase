@@ -28,6 +28,8 @@ public class Game : MonoBehaviour {
 		}
 	}
 	void Start(){
+		Application.targetFrameRate = 60;
+
 		StartCoroutine(GetJiraData());
 	}
 
@@ -61,7 +63,7 @@ public class Game : MonoBehaviour {
 			}
 			
 
-			yield return new WaitForSeconds(5f);
+			yield return new WaitForSeconds(15f);
 		}
 
 
@@ -92,7 +94,7 @@ public class Game : MonoBehaviour {
 				RectTransform newProjectUITransform = newProjectUI.GetComponent<RectTransform>();
 				newProjectUITransform.SetParent(projectsUIContainer);
 				newProjectUITransform.sizeDelta = new Vector2(0,40f);
-				newProjectUITransform.anchoredPosition = new Vector2(0,-20f-(shoals.Count-1)*40f);
+				newProjectUITransform.anchoredPosition = new Vector2(0,-60f-(shoals.Count-1)*40f);
 				newProjectUI.GetComponent<UIProject>().SetProject(projectName);
 				projectsUI.Add(newProjectUI.GetComponent<UIProject>());
 
