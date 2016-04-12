@@ -46,16 +46,16 @@ public class Game : MonoBehaviour {
 				string url = server+"/rest/api/2/search?jql=resolution+=+Unresolved+ORDER+BY+updatedDate+DESC";
 				headers["Authorization"] = "Basic " + System.Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(credentials));
 
-				JiraToFishes((Resources.Load("test"+i) as TextAsset).text);
-				i = (i+1) % 4;
-//				WWW www = new WWW(url, null, headers);
-//				yield return www;
+//				JiraToFishes((Resources.Load("test"+i) as TextAsset).text);
+//				i = (i+1) % 4;
+				WWW www = new WWW(url, null, headers);
+				yield return www;
 
-//				if(www.error == null){
-//					JiraToFishes(www.text);
-//				} else {
-//					Debug.Log("Connection error "+www.error);
-//				}
+				if(www.error == null){
+					JiraToFishes(www.text);
+				} else {
+					Debug.Log("Connection error "+www.error);
+				}
 			} else {
 				Debug.LogError("No credentials found. Please rename Resources/info-demo to Resources/info and write your server and credentials there.");
 			}

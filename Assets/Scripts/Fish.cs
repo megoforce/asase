@@ -24,7 +24,7 @@ public class Fish : MonoBehaviour {
 
 	public void Initialize(Issue _issue){
 		issue = _issue;
-		myTrailRenderer.startWidth = (float)(0.01f + 0.015f*Mathf.Pow((float)(issue.unsolvedMinutes)*10f,0.3f));
+		myTrailRenderer.startWidth = (float)(0.01f + 0.010f*Mathf.Pow((float)(issue.unsolvedMinutes)*10f,0.3f));
 
 	}
 	public void Colorize(Color color){
